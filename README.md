@@ -23,6 +23,11 @@ This is a custom search engine that uses a combination of semantic search and ke
 - project currently does not scrape javascript but you can visit this repository for examples of how to do so `https://github.com/JarettForzano/Scraping-Examples`
 
 - Will later try to swap out the OpenAI model for a baseten hosted one that is specifically made for larger context windows.
+- The original system actually took in both the context from the user and the domain of the company they were researching. This created a more accurate filtering process. Since this is just a demonstration I added a quick and dirty domain extraction method that will take the company name out of the query and use that. If you want to test it completely include the domain inside of the query.
+
+### Improvements
+- Use basetens TRT-LLM that is made for larger context windows and increase the mount of chunks that are taken in. [Here](https://github.com/basetenlabs/truss-examples/tree/main/trt-llm-engine-builder-templates/llama-3_1-8b-instruct/large_context) is the documentation.
+- Concatenate chunks that come from the same site after doing a simularity search and extend the top X amount so that you are more likely to pull from different sites.
 
 
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/jarett)

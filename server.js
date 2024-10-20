@@ -3,6 +3,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const { EmbeddedSearch } = require('./src/api/embedded');
 const { ShortAnswer } = require('./src/models/openai');
+const { ExtractCompany } = require('./src/models/groq');
 
 async function startServer() {
 
@@ -27,7 +28,9 @@ async function startServer() {
     }
 
     try {
-      const { result, tokens } = await EmbeddedSearch(question);
+      const domain = await ExtractCompany(question); // not ideal but it works
+      console.log("Extracted Company", domain);
+      const { result, tokens } = await EmbeddedSearch(question, domain);
       if (!result) {
         return res.status(500).json({ error: 'Result is undefined' });
       }

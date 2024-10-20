@@ -45,17 +45,12 @@ async function BatchEmbedding(list_text) {
 /*
   Key part of the serp search 
 
-  Takes three chunks with their sources and analyzes and answers the users question
+  Takes chunks with their sources and analyzes and answers the users question
 
   ordered to only include what it used in its sources
 */
 async function ChunkDecider(json, query) {
-  console.log("LINK->", json[0].link);
-  console.log("LINK->", json[1].link);
-  console.log("LINK->", json[2].link);
-  console.log("LINK->", json[3].link);
-  console.log("LINK->", json[4].link);
-
+  // Dynamically change the system prompt to include the chunks and sources
   let system_prompt = `
     I will provide you information about a company, along with the user's query. Your task is to analyze the content in relation to the user's query and return an answer. Additionally, return a JSON object containing both your answer and a list of the sources that contributed to your decision.
 

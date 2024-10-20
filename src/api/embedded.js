@@ -5,7 +5,6 @@ const { CreateEmbedding, ChunkDecider, BatchEmbedding } = require('../models/ope
 const { RemoveNoise, CreateKeywords, ScrapeLinks } = require('./helper');
 const CHUNKSIZE = 2500;
 const OVERLAP = 225;
-
 /*
     We are going to try an interesting approach to basic serping.
 
@@ -15,33 +14,30 @@ const OVERLAP = 225;
 
     speed is a must so we are going to compute the simularity between the embeddings ourselves
 */
-async function EmbeddedSearch(context, domain, query_logger) {
+async function EmbeddedSearch(context, domain) {
+  const data = JSON.stringify({ "q": context });
+
   try {
-    const response = await axios.get('https://serpapi.com/search', {
-      params: {
-        engine: "google",
-        q: context,
-        api_key: SERP_API
+    const response = await axios.post('https://google.serper.dev/search', data, {
+      headers: {
+          'X-API-KEY': SERP_API,
+          'Content-Type': 'application/json'
       }
     });
 
-    const link_list = ExtractLinks(response.data);
-    if (query_logger) {
-      query_logger.addData('serp_results', link_list);
-    }
+    const urls = ExtractLinks(response.data);
+    console.log(urls);
 
     const keywords = await CreateKeywords(context);
+    console.log(keywords);
 
     if (keywords.error) {
       return {error: `Failed to create keywords: ${keywords.error}`};
     }
-    
-    if (query_logger) {
-      query_logger.addData('keywords', keywords);
-    }
 
-    const map_link_text = await ScrapeLinksAndChunk(link_list, domain);
+    const map_link_text = await ScrapeLinksAndChunk(urls, domain);
     const filtered_chunks = FilterChunks(map_link_text, keywords, domain);
+
     console.log(filtered_chunks.length)
     if (filtered_chunks.length === 0) { // okay when this happens the user asked a super vague question or its just not available anywhere
       return { result: {
@@ -52,6 +48,7 @@ async function EmbeddedSearch(context, domain, query_logger) {
 
     const embeded_chunks = await AddEmbeddingsToChunks(filtered_chunks);
     const query = RemoveNoise(context);
+    console.log("Removed noise", query);
 
     const queryEmbedding = await CreateEmbedding(query);
     const normalizedQueryEmbedding = NormalizeEmbedding(queryEmbedding);
@@ -156,16 +153,12 @@ async function AddEmbeddingsToChunks(chunk_map) {
 }
 
 function ExtractLinks(data) {
-  //console.log(data);
-  let links = data.organic_results
-      .map(result => result.link)
-      .filter(link => !link.includes('youtube'));
-  
-  if (data.answer_box && data.answer_box.link) {
-      links.push(data.answer_box.link);
+  let urls = data.organic.map(result => result.link);
+  if(data.answerBox && data.answerBox.sourceLink) {
+    urls.push(data.answerBox.sourceLink);
   }
 
-  return links;
+  return urls;
 }
 
 // Returns the simularity between two different embeddings
