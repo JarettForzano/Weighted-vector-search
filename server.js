@@ -18,7 +18,6 @@ async function startServer() {
   });
 
   
-  // Using golddust custom engine v1 
   app.post('/search/vector-search', async (req, res) => {
     const question = req.body.question;
     const format = req.body.format;
